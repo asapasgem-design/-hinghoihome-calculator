@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คำนวณราคา Hinghoihome</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', -apple-system, sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 640px) {
+    .container { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+    grid-column: 1 / -1;
+  }
+  .header img-logo { display: block; }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #222;
+  }
+  .header p { color: #888; font-size: 14px; margin-top: 4px; }
+
+  /* Left panel */
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  .tab-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: #F5C518;
+    border-color: #F5C518;
+    color: #333;
+  }
+  .tab .sub { font-size: 12px; font-weight: 400; margin-top: 2px; color: inherit; }
+
+  .floors-list { display: flex; flex-direction: column; gap: 10px; }
+  .floor-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+  .floor-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+    white-space: nowrap;
+  }
+  .floor-input {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .floor-input button {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f5f5f5;
+    font-size: 18px;
+    cursor: pointer;
+    color: #555;
+    transition: background 0.15s;
+  }
+  .floor-input button:hover { background: #e8e8e8; }
+  .floor-input input {
+    flex: 1;
+    border: none;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    width: 40px;
+    padding: 0;
+  }
+  .add-floor-btn {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    background: white;
+    color: #888;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-floor-btn:hover { border-color: #F5C518; color: #555; }
+  .remove-floor-btn {
+    width: 24px; height: 24px;
+    border: none; background: none;
+    color: #ccc; font-size: 18px;
+    cursor: pointer; padding: 0;
+    line-height: 1;
+  }
+  .remove-floor-btn:hover { color: #e53935; }
+
+  /* Right panel */
+  .price-big {
+    font-size: 42px;
+    font-weight: 800;
+    color: #c0392b;
+    margin: 12px 0 6px;
+    line-height: 1;
+  }
+  .price-subtitle { font-size: 13px; color: #888; margin-bottom: 18px; }
+
+  .price-breakdown {
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 14px;
+    color: #444;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .price-row:last-child { border-bottom: none; }
+  .price-row .label { font-weight: 500; }
+  .price-row .amount { font-weight: 700; }
+  .price-row.free .amount { color: #8BC34A; font-weight: 700; }
+  .price-row.free .label { color: #8BC34A; }
+
+  .features {
+    margin-bottom: 20px;
+  }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+  }
+  .feature-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #F5C518;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #333;
+    font-weight: 700;
+    margin-top: 1px;
+  }
+
+  .cta-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: #F5C518;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .cta-btn:hover { background: #e6b800; }
+
+  .note {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 10px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .badge-gateway {
+    display: inline-block;
+    background: #fff3e0;
+    color: #e65100;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  .total-divider {
+    border: none;
+    border-top: 2px solid #eee;
+    margin: 10px 0;
+  }
+  .price-row.total {
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+  }
+  .copy-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: #333;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .copy-btn:hover { background: #555; }
+  .copy-btn.copied { background: #4CAF50; }
+
+  .messenger-box {
+    background: #e8f4ff;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 13px;
+    color: #1565c0;
+    margin-top: 10px;
+    white-space: pre-line;
+    line-height: 1.6;
+    font-family: 'Courier New', monospace;
+  }
+  .msg-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    margin-bottom: 6px;
+    font-family: sans-serif;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .logo-emoji { font-size: 28px; }
+  .title-text h1 { font-size: 18px; font-weight: 800; color: #222; }
+  .title-text p { font-size: 12px; color: #888; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="title-row" style="justify-content:center;">
+      <span class="logo-emoji">⚡</span>
+      <div class="title-text">
+        <h1>Hinghoihome — คำนวณราคา</h1>
+        <p>ระบบมิเตอร์ไฟฟ้าอัจฉริยะสำหรับหอพัก / อพาร์ทเมนต์</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Left: Input -->
+  <div class="card">
+    <div class="section-label">ประเภทแพ็คเกจ</div>
+    <div class="tab-group">
+      <div class="tab active" id="tab-basic" onclick="setPackage('basic')">
+        ระบบไฟ 1 เฟส
+        <div class="sub">E-Meter 1,590 บาท/ห้อง</div>
+      </div>
+      <div class="tab" id="tab-pro" onclick="setPackage('pro')">
+        ระบบไฟ 3 เฟส
+        <div class="sub">E-Meter 4,590 บาท/ห้อง</div>
+      </div>
+    </div>
+
+    <div class="section-label">จำนวนชั้นและห้องต่อชั้น</div>
+    <div class="floors-list" id="floors-list"></div>
+    <button class="add-floor-btn" onclick="addFloor()">+ เพิ่มชั้น</button>
+  </div>
+
+  <!-- Right: Result -->
+  <div class="card">
+    <div class="section-label">จ่ายแค่นี้ ไม่ต้องจดอีกเลย 😊</div>
+    <div class="price-big" id="price-total">฿0</div>
+    <div class="price-subtitle" id="price-subtitle">ราคารวม VAT 7% แล้ว</div>
+
+    <div class="price-breakdown" id="breakdown">
+      <div class="price-row">
+        <span class="label">กำลังคำนวณ...</span>
+        <span class="amount"></span>
+      </div>
+    </div>
+
+    <div class="features">
+      <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:10px;">🎁 พิเศษสำหรับลูกค้า</div>
+      <div style="font-size:13px;color:#e65100;font-weight:600;margin-bottom:10px;">ราคาเริ่มต้น ไม่มีค่าบริการรายเดือน</div>
+      <div class="feature-item"><div class="feature-icon">✓</div>ระบบอ่านหน่วยอัตโนมัติ</div>
+      <div class="feature-item"><div class="feature-icon">✓</div>Report ดึงรายงานการใช้ไฟรายวัน/รายเดือน</div>
+      <div class="feature-item"><div class="feature-icon">✓</div>Analytic เจ้าของรู้ค่าไฟตัวเองทันที ดูภาพรวมรายห้องและทั้งตึก</div>
+      <div class="feature-item"><div class="feature-icon">✓</div>ใช้งานผ่านมือถือและคอมพิวเตอร์</div>
+      <div class="feature-item"><div class="feature-icon">✓</div>อบรมการใช้งาน ฟรี</div>
+      <div style="background:#fff8e1;border-left:3px solid #F5C518;border-radius:6px;padding:10px 12px;margin-top:10px;font-size:12px;color:#555;line-height:1.6;">
+        <b>หมายเหตุ</b><br>
+        ติดตั้งฟรี สำหรับกรณีที่มีระบบไฟฟ้ารองรับอยู่แล้ว และเป็นการเปลี่ยนมิเตอร์ในตำแหน่งเดิม หากต้องเดินสายใหม่ หรือติดตั้งอุปกรณ์เพิ่มเติม จะมีการประเมินค่าใช้จ่ายก่อนทุกครั้ง
+      </div>
+    </div>
+
+    <button class="copy-btn" id="line-btn" onclick="openLine()" style="background:#06C755;margin-bottom:0;">💬 คุยกับเจ้าหน้าที่ LINE</button>
+
+
+
+    <a href="tel:0985846583" class="cta-btn" style="margin-top:14px;">📞 ติดต่อเจ้าหน้าที่</a>
+  </div>
+</div>
+
+<script>
+const PRICE = {
+  basic: { meter: 1590, gateway: 3590 },
+  pro:   { meter: 4590, gateway: 6990 }
+};
+
+let pkg = 'basic';
+let floors = [{ rooms: 10 }];
+
+function setPackage(p) {
+  pkg = p;
+  document.getElementById('tab-basic').classList.toggle('active', p === 'basic');
+  document.getElementById('tab-pro').classList.toggle('active', p === 'pro');
+  calculate();
+}
+
+function addFloor() {
+  floors.push({ rooms: 10 });
+  renderFloors();
+  calculate();
+}
+
+function removeFloor(i) {
+  if (floors.length === 1) return;
+  floors.splice(i, 1);
+  renderFloors();
+  calculate();
+}
+
+function setRooms(i, val) {
+  const v = Math.max(1, parseInt(val) || 1);
+  floors[i].rooms = v;
+  calculate();
+}
+
+function renderFloors() {
+  const list = document.getElementById('floors-list');
+  list.innerHTML = '';
+  floors.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.className = 'floor-row';
+    row.innerHTML = `
+      <div class="floor-label">ชั้น ${i + 1}</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div class="floor-input">
+          <button onclick="adj(${i},-1)">−</button>
+          <input type="number" min="1" value="${f.rooms}" 
+            onchange="setRooms(${i}, this.value)"
+            oninput="setRooms(${i}, this.value)">
+          <button onclick="adj(${i},1)">+</button>
+        </div>
+        <span style="font-size:13px;color:#888;">ห้อง</span>
+        ${floors.length > 1 ? `<button class="remove-floor-btn" onclick="removeFloor(${i})">×</button>` : ''}
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function adj(i, delta) {
+  floors[i].rooms = Math.max(1, floors[i].rooms + delta);
+  renderFloors();
+  calculate();
+}
+
+function calcGateways(rooms) {
+  // >10 rooms per floor = 2 gateways per floor
+  return rooms > 10 ? 2 : 1;
+}
+
+function calculate() {
+  const p = PRICE[pkg];
+  let totalMeters = 0;
+  let totalGateways = 0;
+
+  floors.forEach(f => {
+    totalMeters += f.rooms;
+    totalGateways += calcGateways(f.rooms);
+  });
+
+  const meterCost = totalMeters * p.meter;
+  const gatewayCost = totalGateways * p.gateway;
+  const total = meterCost + gatewayCost;
+  const vat = Math.round(total * 0.07);
+  const totalWithVat = total + vat;
+
+  // Update price display
+  document.getElementById('price-total').textContent = '฿' + totalWithVat.toLocaleString();
+
+  // Build breakdown
+  let html = '';
+  const meterPrice = p.meter.toLocaleString();
+  html += `<div class="price-row"><span class="label">E-Meter ${meterPrice} × ${totalMeters} ห้อง</span><span class="amount">฿${meterCost.toLocaleString()}</span></div>`;
+  html += `<div class="price-row"><span class="label">Gateway ${p.gateway.toLocaleString()} × ${totalGateways}</span><span class="amount">฿${gatewayCost.toLocaleString()}</span></div>`;
+  html += `<div class="price-row free"><span class="label">ติดตั้ง + Commissioning</span><span class="amount">ฟรี</span></div>`;
+  html += '<hr class="total-divider">';
+  html += `<div class="price-row" style="color:#aaa;font-size:12px;"><span class="label">ราคาก่อน VAT</span><span class="amount">฿${total.toLocaleString()}</span></div>`;
+  html += `<div class="price-row" style="color:#aaa;font-size:12px;"><span class="label">VAT 7%</span><span class="amount">฿${vat.toLocaleString()}</span></div>`;
+  html += `<div class="price-row total" style="color:#c0392b;"><span class="label">รวม VAT แล้ว</span><span class="amount">฿${totalWithVat.toLocaleString()}</span></div>`;
+
+  document.getElementById('breakdown').innerHTML = html;
+
+  // Build messenger message
+  const floorSummary = floors.map((f, i) => `  ชั้น ${i + 1}: ${f.rooms} ห้อง`).join('\n');
+  const pkgLabel = pkg === 'basic' ? 'หิ้งหอยเบสิค (1 Phase)' : 'หิ้งหอยโปร (3 Phase)';
+  const msg = `✅ สรุปราคาเบื้องต้น (${pkgLabel})
+
+🏢 ข้อมูลหอพัก:
+${floorSummary}
+📊 รวม: ${totalMeters} ห้อง / ${floors.length} ชั้น
+
+💡 อุปกรณ์:
+• E-Meter ${totalMeters} เครื่อง = ฿${meterCost.toLocaleString()}
+• Gateway ${totalGateways} ตัว = ฿${gatewayCost.toLocaleString()}
+• ติดตั้ง + Commissioning = ฟรี 🎉
+
+💰 ราคารวม: ฿${total.toLocaleString()} (ไม่รวม VAT)
+💰 รวม VAT 7%: ฿${totalWithVat.toLocaleString()}
+
+📌 ราคาอาจมีการเปลี่ยนแปลงตามพื้นที่อาคารหน้างาน เพื่อการประเมินราคาถูกต้องรบกวนลูกค้าถ่ายรูปแผงมิเตอร์กลับมาให้ทางทีมประเมินครับ`;
+
+  document.getElementById('msg-box').textContent = msg;
+  document.getElementById('copy-btn').textContent = '📋 คัดลอกข้อความ';
+  document.getElementById('copy-btn').classList.remove('copied');
+}
+
+function buildMsg() {
+  const p = PRICE[pkg];
+  let totalMeters = 0;
+  let totalGateways = 0;
+  floors.forEach(f => {
+    totalMeters += f.rooms;
+    totalGateways += calcGateways(f.rooms);
+  });
+  const meterCost = totalMeters * p.meter;
+  const gatewayCost = totalGateways * p.gateway;
+  const total = meterCost + gatewayCost;
+  const vat = Math.round(total * 0.07);
+  const totalWithVat = total + vat;
+  const floorSummary = floors.map((f, i) => `ชั้น ${i+1}: ${f.rooms} ห้อง`).join(', ');
+  const pkgLabel = pkg === 'basic' ? 'ระบบไฟ 1 เฟส' : 'ระบบไฟ 3 เฟส';
+  return `สนใจระบบ Hinghoihome ครับ
+
+แพ็คเกจ: ${pkgLabel}
+ข้อมูล: ${floorSummary}
+รวม: ${totalMeters} ห้อง / ${floors.length} ชั้น
+
+ราคารวม VAT: ฿${totalWithVat.toLocaleString()}
+
+📌 ราคาอาจมีการเปลี่ยนแปลงตามพื้นที่อาคารหน้างาน เพื่อการประเมินราคาถูกต้องรบกวนลูกค้าถ่ายรูปแผงมิเตอร์กลับมาให้ทางทีมประเมินครับ`;
+}
+
+function openLine() {
+  const msg = buildMsg();
+  const encoded = encodeURIComponent(msg);
+  window.open(`https://line.me/R/oaMessage/@hinghoihome/?text=${encoded}`, '_blank');
+}
+
+// Init
+renderFloors();
+calculate();
+</script>
+</body>
+</html>
